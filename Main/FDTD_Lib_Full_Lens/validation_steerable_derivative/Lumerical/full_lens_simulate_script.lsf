@@ -1,0 +1,141 @@
+cd('/n/home13/dhazineh/Lumerical_steerable_fullField');
+switchtolayout; deleteall;
+lensload = "nanofins_gds.gds";
+span = 50e-6;
+
+nm=1e-9;
+w = [532]*nm;
+frq_point = length(w);
+substhick = 600*nm;
+glass_index=1.46;
+Th = 600*nm;
+
+TiO2File = "TiO2.txt";
+# Material definition
+if(!materialexists("TiO2")){
+sampled = readdata(TiO2File);
+s=size(sampled);
+sampled2 = matrix(s(1),2);
+sampled2(1:s(1),1) = c/(sampled(1:s(1),1)*nm);# Set frequencies.
+sampled2(1:s(1),2) = ( sampled(1:s(1),2) + 1i*sampled(1:s(1),3) )^2; #Set permittivites. (square of the refractive indices)
+temp = addmaterial("Sampled data");
+setmaterial(temp,"name","TiO2");
+setmaterial("TiO2","sampled data",sampled2);
+}
+
+
+####################################################
+# Add the substrate for completion
+# -substhick to 0 in z
+addrect;
+set("name", "substrate");
+set("x",0); 
+set("z",0);  
+set("y",0);
+setnamed("substrate","z min",-2*substhick);
+setnamed("substrate","z max",0);
+set("index",glass_index);
+setnamed("substrate","x span", 3.0*span);
+setnamed("substrate","y span", 3.0*span);
+
+# Add linear polarized light source
+# injected at -substhick/2 
+sources; 
+addplane;
+set("name","Ex"); set("injection axis","z-axis");
+set("direction","forward"); 
+set("phase",0);
+set("angle phi", 45);
+set("x",0);
+set("y",0);
+set("z",-substhick/4); 
+set("wavelength start", w(1));
+set("wavelength stop", w(length(w)));
+setnamed("Ex","x span",2*span);
+setnamed("Ex","y span",2*span);
+
+# Add Monitors
+mname = "Transmission";
+monitors;
+addprofile;
+set("name", mname); 
+set("monitor type","2D Z-normal");
+set("override global monitor settings",1);
+set("use wavelength spacing",1);
+set("frequency points",frq_point); 
+set("use source limits",1);
+set("x",0); 
+set("y",0); 
+setnamed(mname,"z",Th + 50*nm);
+setnamed(mname,"x span",2*span);
+setnamed(mname,"y span",2*span);
+
+# Create Simulation Field
+addfdtd; 
+select("FDTD");
+set("dimension","3D");
+set("x min bc","PML");
+set("x max bc","PML");
+set("z min bc","PML");
+set("z max bc","PML");
+set("y min bc","PML");
+set("y max bc","PML");
+set("x",0); 
+set("y",0); 
+set("z min",-substhick/2);
+set("mesh type","auto non-uniform");
+set("mesh accuracy",1);
+#set("dt stability factor",0.8);
+#set("simulation time",1000e-14);
+set('index',1);
+#setnamed("FDTD","auto shutoff min",1e-4);
+#setnamed("FDTD","auto shutoff max",2);
+setnamed("FDTD","x span",1.25*span);
+setnamed("FDTD","y span",1.25*span);
+setnamed("FDTD","z max",substhick+100*nm);
+
+#
+addring;
+set("material", "Au (Gold) - Palik");
+set("x", 0);
+set("y", 0);
+set("z min", 0);
+set("z max", 150e-9);
+set("inner radius", span/2 + 500e-9);
+set("outer radius", 1.5*span);
+
+# Run without anything to get a ref field just above the surface
+run;
+T = transmission(mname); # get transmission spectra
+f = getdata(mname,"f"); # get frequency vector
+y = [-25e-6 : 350e-9: 25e-6]; 
+x = [-25e-6 : 350e-9: 25e-6]; 
+z = [600e-9 + 500e-9];	
+Exy=farfieldexact3d(mname,x,y,z, [1:1:frq_point]);
+matlabsave("ref_field", Exy,z,x,y,f);
+switchtolayout;
+
+# Load nanopillars - 0 to Th in z
+gdsimport(lensload, 'MAIN', 0);
+set("material","TiO2");
+set("z span", Th);
+set("z",Th/2);
+set("x", -span/2);
+set("y", -span/2);
+
+####################################################
+
+run;
+T = transmission(mname); # get transmission spectra
+f = getdata(mname,"f"); # get frequency vector
+
+Exy=farfieldexact3d(mname,x,y,z, [1:1:frq_point]);
+matlabsave("fieldMS", Exy,z,x,y,f);
+
+y = linspace(-375e-6, 375e-6, 600);
+x = linspace(-375e-6, 375e-6, 600);
+z = [0.9e-3, 1e-3, 1.1e-3];	
+Exy=farfieldexact3d(mname,x,y,z, [1:1:frq_point]);
+matlabsave("far_field", Exy,z,x,y,f);
+
+
