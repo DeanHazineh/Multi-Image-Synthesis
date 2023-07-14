@@ -86,7 +86,7 @@ def plot_dataset(sub_fold, mode="metasurface"):
         fig = plt.figure()
         ax = df_plt.addAxis(fig, 1, 1)
         ax[0].imshow(net_psf[0, 0, 0], norm=TwoSlopeNorm(0), cmap="seismic")
-        ax[0].set_title(str(np.round(PSNR, 3)))
+        df_plt.formatPlots(fig, ax[0], None, title=f'PSNR: {np.round(PSNR, 3)}', rmvxLabel=True, rmvyLabel=True, setAspect="equal")
         plt.savefig(savepath + "net.png")
         plt.savefig(savepath + "net.pdf")
 
@@ -97,18 +97,11 @@ def plot_dataset(sub_fold, mode="metasurface"):
         for i in range(4):
             try:  # We need this catch statement so we dont get errors if the MIS decomposition algorithm failed
                 ax[i].imshow(psf_decomp[0, 0, i, 0], norm=TwoSlopeNorm(0, vmin=min_val, vmax=max_val), cmap="seismic")
-                ax[i].set_title(str(np.round(energy[0, i, 0], 3)))
+                df_plt.formatPlots(fig, ax[i], None, title=f'Focusing Efficieng: {np.round(energy[0, i, 0], 3)}', rmvxLabel=True, rmvyLabel=True, setAspect="equal")
             except:
                 continue
         plt.savefig(savepath + "decomposition.png")
         plt.savefig(savepath + "decomposition.pdf")
-
-        fig = plt.figure(figsize=(10, 10))
-        ax = df_plt.addAxis(fig, 1, 1)
-        ax[0].imshow(target_PSFs[0, 0, 0], norm=TwoSlopeNorm(0), cmap="seismic")
-        plt.savefig(savepath + "target_filter.png")
-        plt.savefig(savepath + "target_filter.pdf")
-
         plt.close()
     return
 

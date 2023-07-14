@@ -23,7 +23,7 @@ def run_optimization(init_phase, savepath, field_prop, target_intensity, loss_fu
     norm_by = np.sum(aperture)
 
     # GD optimization
-    iter = 1000
+    iter = 500
     if loss_fun == "L1":
         loss_fn = lambda psf, target: tf.math.reduce_sum(tf.math.abs(psf - target))
     else:
@@ -46,13 +46,17 @@ def run_optimization(init_phase, savepath, field_prop, target_intensity, loss_fu
             fig = plt.figure(figsize=(30, 5))
             ax = df_plt.addAxis(fig, 1, 6)
             ax[0].plot(loss_history)
+            df_plt.formatPlots(fig, ax[0], xlabel="step", ylabel="loss", setAspect="auto")
             ax[1].imshow(np.squeeze(trans_tensor * aperture))
+            df_plt.formatPlots(fig, ax[1], title="Lens transmittance", rmvxLabel=True, rmvyLabel=True, setAspect="equal")
             ax[2].imshow(np.squeeze(np.angle(np.exp(1j * phase_tensor.numpy()))), cmap="hsv")
+            df_plt.formatPlots(fig, ax[2], title="Lens phase", rmvxLabel=True, rmvyLabel=True, setAspect="equal")
             ax[3].imshow(np.squeeze(out_trans))
-            ax[3].set_title(np.sum(out_trans**2) / norm_by)
+            df_plt.formatPlots(fig, ax[3], title=f"Sensor int; Energy: {np.sum(out_trans**2) / norm_by:.2f}", rmvxLabel=True, rmvyLabel=True, setAspect="equal")
             ax[4].imshow(target_intensity)
-            ax[4].set_title(np.sum(target_intensity.numpy()))
+            df_plt.formatPlots(fig, ax[4], title=f"Target int; Energy: {np.sum(target_intensity.numpy()):.2f}", rmvxLabel=True, rmvyLabel=True, setAspect="equal")
             ax[5].imshow(np.squeeze(out_phase), cmap="hsv")
+            df_plt.formatPlots(fig, ax[5], title="Sensor Phase", rmvxLabel=True, rmvyLabel=True, setAspect="equal")
             plt.savefig(savepath + "epoch" + str(i) + "chkpoint.png")
             plt.close()
 
@@ -103,7 +107,7 @@ def run_SGD_Inverse_Sampler():
     run_optimization(init_phase, savepath + "_L2/", field_prop, target_intensity, loss_fun="L2")
 
     # Run some random starts with random phase
-    repeat_num = 5
+    repeat_num = 2
     for j in range(repeat_num):
         np.random.seed(j)
         init_phase = np.random.rand(*init_phase.shape) * 2 * np.pi

@@ -54,20 +54,24 @@ def run_optimization(init_phase, savepath, field_prop, target_intensity, target_
             fig = plt.figure(figsize=(10, 15))
             ax = df_plt.addAxis(fig, 3, 2)
             ax[0].imshow(psf_intensity[0, 0, :, :])
-            ax[0].set_title(np.sum(psf_intensity[0, 0]))
+            df_plt.formatPlots(fig, ax[0], None, title=f"PSF 0; Energy: {np.sum(psf_intensity[0, 0]):.1f}", rmvxLabel=True, rmvyLabel=True)
             ax[1].imshow(psf_intensity[0, 1, :, :])
-            ax[1].set_title(np.sum(psf_intensity[0, 1]))
+            df_plt.formatPlots(fig, ax[1], None, title=f"PSF 90: Energy: {np.sum(psf_intensity[0, 1]):.1f}", rmvxLabel=True, rmvyLabel=True)            
             ax[2].imshow(np.squeeze(np.angle(np.exp(1j * out_phase[0, 0].numpy()))), cmap="hsv")
+            df_plt.formatPlots(fig, ax[2], None, title=f"MS Phase 0", rmvxLabel=True, rmvyLabel=True)            
             ax[3].imshow(np.squeeze(np.angle(np.exp(1j * out_phase[0, 1].numpy()))), cmap="hsv")
-
+            df_plt.formatPlots(fig, ax[3], None, title=f"MS Phase 90", rmvxLabel=True, rmvyLabel=True)            
             ax[4].imshow(psf_intensity[0, 2, :, :])
+            df_plt.formatPlots(fig, ax[4], None, title=f"PSF 45", rmvxLabel=True, rmvyLabel=True)            
             ax[5].imshow(psf_intensity[0, 3, :, :])
-            plt.savefig(savepath + "epoch" + str(i) + "chkpoint.png")
+            df_plt.formatPlots(fig, ax[5], None, title=f"PSF 135", rmvxLabel=True, rmvyLabel=True)            
+            plt.savefig(savepath + "epoch" + str(i) + "chekpoint.png")
             plt.close()
 
             fig = plt.figure(figsize=(5, 5))
             ax = df_plt.addAxis(fig, 1, 1)
             ax[0].plot(loss_history)
+            df_plt.formatPlots(fig, ax[0], xlabel="step", ylabel="loss")            
             plt.savefig(savepath + "loss_history.png")
             plt.close()
 
@@ -77,8 +81,8 @@ def run_optimization(init_phase, savepath, field_prop, target_intensity, target_
 
     fig = plt.figure(figsize=(5, 10))
     ax = df_plt.addAxis(fig, 2, 1)
-    ax[0].imshow(lens_phase[0], cmap="hsv")
-    ax[1].imshow(lens_phase[1], cmap="hsv")
+    for i in range(2):
+      ax[i].imshow(lens_phase[i], cmap="hsv")
     plt.savefig(savepath + "lens_phase.png")
     plt.savefig(savepath + "lens_phase.pdf")
 
@@ -91,8 +95,8 @@ def run_optimization(init_phase, savepath, field_prop, target_intensity, target_
 
     fig = plt.figure(figsize=(10, 5))
     ax = df_plt.addAxis(fig, 1, 2)
-    ax[0].imshow(out_phase[0], cmap="hsv")
-    ax[1].imshow(out_phase[1], cmap="hsv")
+    for i in range(2):
+        ax[i].imshow(out_phase[i], cmap="hsv")
     plt.savefig(savepath + "out_phase.png")
     plt.savefig(savepath + "out_phase.pdf")
 
@@ -141,7 +145,7 @@ def optimize_interference():
     ms_samplesM = prop_params["ms_samplesM"]
     init_phase = np.random.rand(2, ms_samplesM["y"], ms_samplesM["x"]) * 2 * np.pi
     savepath = dirname + "output_interf/"
-    run_optimization(init_phase, savepath, field_prop, target_intensity, interf_target, saveAtStep=200, iter=3000)
+    run_optimization(init_phase, savepath, field_prop, target_intensity, interf_target, saveAtStep=200, iter=1000)
 
     return
 

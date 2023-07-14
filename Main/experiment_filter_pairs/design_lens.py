@@ -39,7 +39,7 @@ def create_quadrature_pair(propagation_parameters, sigma):
 
 def optimize_gaussian_derivative():
     savepath = str(Path(__file__).parent) + "/gaussian_derivative/"
-    saveAtEpochs = 100
+    saveAtEpochs = 250
     lagrange_energy = 10
     bias_scale = 2e2
     propagation_parameters = df_struct.prop_params(

@@ -30,8 +30,8 @@ def create_steerable_1Derivatives(propagation_parameters, sigma_um_list, rotatio
 
 def optimize(alpha_mask, tag):
     savepath = str(Path(__file__).parent) + "/" + tag + ""
-    lagrange_energy = 3
-    bias_scale = 2e2
+    lagrange_energy = 2
+    bias_scale = 1e2
     propagation_parameters = df_struct.prop_params(
         {
             "wavelength_set_m": [532e-9],
@@ -61,7 +61,7 @@ def optimize(alpha_mask, tag):
     init_alpha = np.array([[1.0, 0.5, -1.0, -0.5]])
 
     # Create the pipeline, load checkpoint, and visualize test image, run optimization
-    pipeline = MIS_Optimizer_PSF(alpha_mask, init_alpha, init_norm_param, point_source_locs, propagation_parameters, target_PSFs, lagrange_energy, bias_scale, savepath, saveAtEpochs=100)
+    pipeline = MIS_Optimizer_PSF(alpha_mask, init_alpha, init_norm_param, point_source_locs, propagation_parameters, target_PSFs, lagrange_energy, bias_scale, savepath, saveAtEpochs=250)
     pipeline.customLoad()
 
     lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(initial_learning_rate=1e-1, decay_steps=100, decay_rate=0.9)
@@ -76,4 +76,4 @@ def optimize(alpha_mask, tag):
 
 if __name__ == "__main__":
     optimize([1.0, 0.0, 1.0, 0.0], "output_Two_image/")
-    optimize([1.0, 1.0, 1.0, 1.0], "output_Four_image/")
+    #optimize([1.0, 1.0, 1.0, 1.0], "output_Four_image/")

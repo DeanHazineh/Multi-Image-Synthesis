@@ -25,7 +25,6 @@ def create_target(sigma, propagation_parameters):
 def optimize(savepath, lagrange_energy, bias_scale, alpha_mask, epochs, mode="metasurface"):
     # If optic is metasurface, let us optimize a real nanofin metasurface with the MLP
     # If optic is ideal, let us optimize four decoupled phase profiles
-
     if not os.path.exists(savepath):
         os.makedirs(savepath)
 
@@ -80,6 +79,6 @@ if __name__ == "__main__":
     # Sweep the abaltion study with different values of the regularizers (including 0)
     # Also compare the case of the true metalens system vs the idealized four image multi-synthesis
     for Energy_coeff in [0, 5]:
-        for bias_coeff in [0, 2e2]:
-            optimize(savepath + f"/output_metasurface/Regularer_E{Energy_coeff}_B{bias_coeff}/", Energy_coeff, bias_coeff, alpha_mask, epochs=500, mode="metasurface")
-            # optimize(savepath + f"/output_ideal/Regularer_E{Energy_coeff}_B{bias_coeff}/", Energy_coeff, bias_coeff, alpha_mask, epochs=500, mode="ideal")
+        for bias_coeff in [0, 5e3]:
+            optimize(savepath + f"/output_metasurface/Regularer_E{Energy_coeff}_B{bias_coeff}/", Energy_coeff, bias_coeff, alpha_mask, epochs=1000, mode="metasurface")
+            optimize(savepath + f"/output_ideal/Regularer_E{Energy_coeff}_B{bias_coeff}/", Energy_coeff, bias_coeff, alpha_mask, epochs=1000, mode="ideal")
