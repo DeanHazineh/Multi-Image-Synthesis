@@ -7,3 +7,4 @@
 **.fsp
 temp/**
 visualize_minimum_bias_example/**
+**.gitignore
