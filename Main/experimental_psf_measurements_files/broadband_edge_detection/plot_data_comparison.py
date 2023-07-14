@@ -18,7 +18,7 @@ from src.Multi_Image_Synthesis_Optimizers import compute_PSFs_with_interference
 
 dirname = str(Path(__file__).parent) + "/"
 savepath = dirname + "saved_Figs/"
-exp_dat_path = "Experimental_meas/iter39Frameid-0-time-0.pkl"
+exp_dat_path = "Experimental_meas/iter39Frameid-0-time-0_reducedSize.pkl"
 sim_dat_path = dirname + "optimized_lens.pickle"
 
 
@@ -26,11 +26,8 @@ def load_exp_PSF():
     ### Get Experiment File
     with open(dirname + exp_dat_path, "rb") as fhandle:
         data = pickle.load(fhandle)
-        raw_images = data["raw_images"]
-        images = data["converted_images"]
         images_split = data["converted_sub_images"][:, [3, 1, 0, 2], :, :]  # Reorder polarization idx
-        dark_img = data["dark_image"]
-        badPixelMask = data["badPixelIdx"]
+        
 
     # use the simulation alpha
     with open(sim_dat_path, "rb") as fhandle:
