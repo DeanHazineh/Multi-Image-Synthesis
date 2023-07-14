@@ -1,0 +1,214 @@
+switchtolayout; deleteall;
+clear; 
+cd('/home/deanhazineh/Research/Lumerical/');
+savefolder = '/home/deanhazineh/Research/Lumerical/Rectangular_Nanofin_library/Test/';
+
+# INITIAL DECLARATIONS + IMPORTANT PARAMETERS
+# =========================================================================================
+nm=1e-9;
+w = [310:1:750]*nm;
+frq_point = length(w);
+
+# Nanofin dimensions
+Th = 600*nm;
+substhick = 800*nm;
+unit = [350]*nm;
+propGap = 700*nm;
+mname = "Transmission"; # monitor name
+farpoint = substhick+Th+500*1e-6;
+
+# Material definition
+if(!materialexists("TiO2")){
+sampled = readdata("TiO2.txt");
+s=size(sampled);
+sampled2 = matrix(s(1),2);
+sampled2(1:s(1),1) = c/(sampled(1:s(1),1)*nm);# Set frequencies.
+sampled2(1:s(1),2) = ( sampled(1:s(1),2) + 1i*sampled(1:s(1),3) )^2; #Set permittivites. (square of the refractive indices)
+temp = addmaterial("Sampled data");
+setmaterial(temp,"name","TiO2");
+setmaterial("TiO2","sampled data",sampled2);
+}
+
+
+# PARAMETER INDEPENDENT BUILDS
+# ===============================================================================
+sources; # circular polarized light
+addplane;
+set("name","Ex"); 
+set("injection axis","z-axis");
+set("direction","forward"); 
+set("polarization angle",0);
+set("phase",0);
+set("x",0);
+set("y",0);
+set("z",substhick/2.5); 
+set("wavelength start", w(1));
+set("wavelength stop", w(length(w)));
+
+sources; # circular polarized light
+addplane;
+set("name","Ey"); set("injection axis","z-axis");
+set("direction","forward"); set("polarization angle",90);
+set("phase",0);
+set("x",0);
+set("y",0);
+set("z",substhick/2.5); 
+set("wavelength start", w(1));
+set("wavelength stop", w(length(w)));
+
+addrect;
+set("name", "substrate");
+set("x",0); 
+set("z",0);  
+set("y",0);
+setnamed("substrate","z min",0);
+setnamed("substrate","z max",substhick);
+set("material", "SiO2 (Glass) - Palik");
+
+monitors;
+addprofile;
+set("name", mname);
+set("monitor type","2D Z-normal");
+set("override global monitor settings",1);
+set("use source limits",1);
+set("use wavelength spacing",1);
+set("frequency points",frq_point); 
+set("x",0); 
+set("y",0); 
+set("z",substhick+Th+0.8*propGap);
+
+addfdtd; 
+select("FDTD");
+set("dimension","3D");
+set("x min bc","Bloch");
+set("x max bc","Bloch");
+set("y min bc","Bloch");
+set("y max bc","Bloch");
+set("z min bc","PML");
+set("z max bc","PML");
+set("x",0); 
+set("y",0); 
+set("z min",substhick/2-substhick/4);
+set("z max",Th+substhick+propGap);
+set("mesh type","auto non-uniform");
+set("mesh accuracy",2);
+set("dt stability factor",0.85);
+set('index',1);
+set("use early shutoff",1);
+
+addmesh;
+set("name", "newmesh");
+set("x",0); 
+set("y",0); 
+set("z min",substhick-20*nm);
+set("z max", substhick + Th+20*nm);
+# 10 nm gives good results according to Lumerical Exchange
+# but 5 nm is more accurate
+set("dx",5*nm);
+set("dy",5*nm);
+set("dz",5*nm);
+
+# PARAMETER SWEEPING
+# ================================================================================
+# We need to initialize the object first outside the for loop
+addrect;
+str="nanostruct";
+set("name",str);
+setnamed(str,"x",0);
+setnamed(str,"y",0);
+setnamed(str,"z min",substhick); 
+setnamed(str,"z max",substhick+Th);
+setnamed(str,"material",'TiO2');
+setnamed(str,"x span", 50*nm);
+setnamed(str,"y span", 50*nm);
+
+for(uniti = 1:length(unit)){
+    switchtolayout;
+    setnamed("Ex","x span",unit(uniti)*2);
+    setnamed("Ex","y span",unit(uniti)*2);
+    setnamed("Ey","x span",unit(uniti)*2);
+    setnamed("Ey","y span",unit(uniti)*2);
+    setnamed("substrate","x span",unit(uniti)*2);
+    setnamed("substrate","y span",unit(uniti)*2);
+    setnamed(mname,"x span",2.5*unit(uniti));
+    setnamed(mname,"y span",2.5*unit(uniti));
+    setnamed("FDTD","x span",unit(uniti));
+    setnamed("FDTD","y span",unit(uniti));
+    setnamed("newmesh", "x span", 1*unit(uniti));
+    setnamed("newmesh", "y span", 1*unit(uniti));   
+
+    # remove structure and run to get a reference phase
+    select(str);
+    delete;                           
+    run;
+    T = transmission(mname); # get transmission spectra
+    f = getdata(mname,"f"); # get frequency vector
+    # Note that farfieldexact3d = farfieldexact when only one point is specified
+    refE=farfieldexact3d(mname,0,0,farpoint, [1:1:frq_point]);
+    refE=pinch(refE);
+    refphix=angle(refE(1,1:frq_point));
+    refphiy=angle(refE(2,1:frq_point));
+    refphiz=angle(refE(3,1:frq_point)); 
+    matlabsave(savefolder + "SimParams_unit" + num2str(unit(uniti)/nm) + "_RefField", refE, refphix, refphiy, refphiz, T);
+    
+    # After reference calculation add things back in
+    switchtolayout;
+    addrect;
+    str="nanostruct";
+    set("name",str);
+    setnamed(str,"x",0);
+    setnamed(str,"y",0);
+    setnamed(str,"z min",substhick); 
+    setnamed(str,"z max",substhick+Th);
+    setnamed(str,"material",'TiO2');
+    setnamed(str,"x span", 50*nm);
+    setnamed(str,"y span", 50*nm);
+    
+    Lx_vect = [30*nm:5*nm:unit(uniti)-30*nm];
+    Ly_vect = [30*nm:5*nm:unit(uniti)-30*nm];
+    matlabsave(savefolder +"SimParams"+"_unit" +num2str(unit(uniti)/nm), Th, Lx_vect, Ly_vect, w, f);
+    for (len_inx = 1:length(Lx_vect)){
+        for(len_iny = 1:length(Ly_vect)){    
+    
+        Lx = Lx_vect(len_inx);
+        Ly = Ly_vect(len_iny);
+        setnamed(str,"x span", Lx);
+        setnamed(str,"y span", Ly);
+        setnamed("newmesh", "x span", 2*Lx+20*nm);
+        setnamed("newmesh", "y span",  2*Ly+20*nm);   
+        
+        run;       
+        T = transmission(mname); # get transmission spectra
+        f = getdata(mname,"f"); # get frequency vector
+        Ex=farfieldexact3d(mname,0,0,farpoint,[1:1:frq_point]);
+        Ex=pinch(Ex);
+        phasex=angle(Ex(1,1:frq_point))-refphix;
+        phasey=angle(Ex(2,1:frq_point))-refphiy;
+        phasez=angle(Ex(3,1:frq_point))-refphiz;   
+        TransX = abs(Ex)^2 / (abs(refE)^2 + 1e-12);
+        # NOTE: Trans refers here to transmission not transmittance!!! Be very cautious and aware of this when using it later. 
+        
+        matlabsave(savefolder + "unit" + num2str(unit(uniti)/nm)+ "_Lx" + num2str(Lx/nm)+ "_Ly" + num2str(Ly/nm), Ex, phasex, phasey, phasez, TransX, T, Lx, Ly);
+        switchtolayout;    
+        }    
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+               
