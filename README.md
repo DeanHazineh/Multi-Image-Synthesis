@@ -23,7 +23,21 @@
 <p> As an example, we demonstrate the use of this architecture for the task of opto-electronic image processing. As shown on the right, four images of a scene are captured by the sensor but each of the four is subtly coded. When the four images are simply added together in post-processing, one obtains a differented rendering of the scene for minimum computation costs. This is the first snapshot, compact (single-lens) implementation of opto-electronic image processing demonstrated to date which can be used on any scene. </p>
 
 ## Install and Run
-To run the code in this repository, one must first install the package, D-Flat. All core physics functions like field propagation are stored there. 
+To run the code in this repository, one must first install the python package, D-Flat. All core physics functions like field propagation are stored there. Instructions are re-written here for convenience but see the official repository for more details:
+
+Note that git LFS should be installed if not already via `git lfs install` at the terminal. Then install the python package to your environment via:
+
+```
+git clone https://github.com/DeanHazineh/DFlat
+python setup.py develop
+pip install -r requirements.txt
+```
+
+After, you may then download and use this repostiory like normal:
+```
+git clone https://github.com/DeanHazineh/Multi-Image-Synthesis
+```
+
 
 ## Credits and Acknowledgements:
 ```
