@@ -1,6 +1,6 @@
 # Polarization Multi-Image Synthesis with Birefringent Metasurfaces
 
-###  [ [Project Website] ](https://deanhazineh.github.io/publications/Multi_Image_Synthesis/MIS_Home.html) [ [Paper and Supplement] ](Documents/Polarization_Multi_Image_Synthesis_with_Birefringent_Metasurfaces.pdf)
+###  [ [Project Website] ](https://deanhazineh.github.io/publications/Multi_Image_Synthesis/MIS_Home.html) [ [Paper and Supplement] ](https://arxiv.org/abs/2307.08106)
 <p>This paper was published in the proceedings of the 2023 IEEE International Conference on Computational Photography (ICCP).</p>
 
 <p>Along with this repository which contains the code to reproduce the results in the main paper, we also release a seperate package, called <a href="https://github.com/DeanHazineh/DFlat" target="_blank">D-Flat</a>, which provides a comprehensive auto-differentiable framework for the design of diffractive optics.</p>
