@@ -28,7 +28,7 @@ To run the code in this repository, one must first install the python package, D
 Note that git LFS should be installed if not already via `git lfs install` at the terminal. Then install the python package to your environment via:
 
 ```
-git clone https://github.com/DeanHazineh/DFlat
+git clone -b Multi-Image-Synthesis-2023-ICCP https://github.com/DeanHazineh/DFlat
 python setup.py develop
 pip install -r requirements.txt
 ```
